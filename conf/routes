@@ -11,4 +11,6 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 
 
 GET     /todos               controllers.TodoController.getAll()
-GET     /todos/:id               controllers.TodoController.getById(id: Long)
+POST     /todos               controllers.TodoController.createNew
+GET     /todos/:id               controllers.TodoController.getById(id: String)
+DELETE     /todos/:id               controllers.TodoController.delete(id: String)

@@ -1,0 +1,14 @@
+version: '3.1'
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    expose:
+      - 27017
+  api:
+    build:
+      context: ../
+      dockerfile: ./Dockerfile
+    ports:
+      - "9000:9000"
