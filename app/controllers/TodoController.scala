@@ -1,7 +1,6 @@
 package controllers
 
 import models.CreateTodoItemRequest
-import models.TodoItem
 import models.TodoItemEntity
 import play.api.mvc
 import play.api.mvc.BaseController
@@ -26,13 +25,7 @@ class TodoController @Inject() (implicit
     val controllerComponents: ControllerComponents,
     val todoItemRepo: TodoItemRepository
 ) extends BaseController {
-  implicit val todoListJson = Json.format[TodoItem]
   implicit val createTodoJson = Json.format[CreateTodoItemRequest]
-
-  private var todoList = List[TodoItem](
-    TodoItem(1, "test", true),
-    TodoItem(2, "some other value", false)
-  )
 
   def getAll(): mvc.Action[mvc.AnyContent] = Action.async {
     todoItemRepo.getAll().map { tis =>
