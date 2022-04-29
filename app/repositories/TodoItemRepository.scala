@@ -1,6 +1,7 @@
 package repositories
 
 import models.TodoItemEntity
+import models.UpdateTodoItemRequest
 import org.joda.time.DateTime
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
@@ -22,14 +23,14 @@ class TodoItemRepository @inject.Inject() (implicit
     reactiveMongoApi: ReactiveMongoApi
 ) {
   def collection: Future[BSONCollection] =
-    reactiveMongoApi.database.map(_.collection("todoItems"))
+    reactiveMongoApi.database map { _.collection("todoItems") }
 
   def getAll(limit: Int = 100): Future[Seq[TodoItemEntity]] = {
-    collection.flatMap(
+    collection flatMap {
       _.find(BSONDocument(), Option.empty[TodoItemEntity])
         .cursor[TodoItemEntity](ReadPreference.Primary)
         .collect[Seq](limit, Cursor.FailOnError[Seq[TodoItemEntity]]())
-    )
+    }
   }
 
   def getById(id: BSONObjectID): Future[Option[TodoItemEntity]] = {

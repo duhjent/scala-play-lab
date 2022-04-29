@@ -18,14 +18,16 @@ import reactivemongo.bson.BSONObjectID
 import scala.util.Failure
 import scala.concurrent.Future
 import scala.util.Success
+import models.UpdateTodoItemRequest
 
 @Singleton
-class TodoController @Inject() (implicit
-    executionContext: ExecutionContext,
+class TodoController @Inject() (
     val controllerComponents: ControllerComponents,
     val todoItemRepo: TodoItemRepository
-) extends BaseController {
+)(implicit executionContext: ExecutionContext)
+    extends BaseController {
   implicit val createTodoJson = Json.format[CreateTodoItemRequest]
+  implicit val updateTodoJson = Json.format[UpdateTodoItemRequest]
 
   def getAll(): mvc.Action[mvc.AnyContent] = Action.async {
     todoItemRepo.getAll().map { tis =>
@@ -84,4 +86,39 @@ class TodoController @Inject() (implicit
     }
   }
 
+  def update(): mvc.Action[mvc.AnyContent] = Action.async {
+    request: mvc.Request[mvc.AnyContent] =>
+      val model: Option[UpdateTodoItemRequest] = request.body.asJson.flatMap(
+        Json.fromJson[UpdateTodoItemRequest](_).asOpt
+      )
+      model match {
+        case None => Future.successful(BadRequest("Unable to parse"))
+        case Some(value) =>
+          val id = BSONObjectID.parse(value.id)
+          id match {
+            case Failure(exception) =>
+              Future.successful(BadRequest("Unable to parse id"))
+            case Success(parsedId) =>
+              todoItemRepo.getById(parsedId).flatMap { ety =>
+                ety match {
+                  case None => Future.successful(NotFound)
+                  case Some(etyToUpd) =>
+                    update(etyToUpd, value)
+                }
+              }
+          }
+      }
+  }
+
+  private def update(etyToUpd: TodoItemEntity, model: UpdateTodoItemRequest) = {
+    val newEty = etyToUpd.copy(
+      description = model.description,
+      isDone = model.isDone
+    )
+    todoItemRepo
+      .update(newEty)
+      .map { x =>
+        Ok(Json.toJson(newEty))
+      }
+  }
 }

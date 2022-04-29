@@ -12,6 +12,8 @@ import reactivemongo.bson.BSONDocument
 import reactivemongo.bson.BSONDateTime
 import reactivemongo.bson.BSONDocumentWriter
 
+case class UpdateTodoItemRequest(id: String, description: String, isDone: Boolean)
+
 case class CreateTodoItemRequest(description: String)
 
 case class TodoItemEntity(
